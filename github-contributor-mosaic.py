@@ -5,7 +5,6 @@ from io import BytesIO
 
 import pycurl
 from PIL import Image
-from cStringIO import StringIO
 from octopus import TornadoOctopus
 
 
@@ -18,7 +17,7 @@ def get_avatars(urls):
 
     def handle_url_response(url, response):
         if 'Not found' == response.text:
-            print url
+            print 'URL Not Found: %s' % url
         else:
             avatars.append(response.text)
 
@@ -34,7 +33,7 @@ def find_avatars(github_project):
     c = pycurl.Curl()
     data = BytesIO()
 
-    url = 'https://github.com/%s/graphs/contributors-data' % github_project
+    url = 'https://api.github.com/repos/%s/contributors' % github_project
 
     c.setopt(c.URL, url)
     c.setopt(c.WRITEFUNCTION, data.write)
@@ -42,30 +41,36 @@ def find_avatars(github_project):
 
     json_data = json.loads(data.getvalue())
 
-    return map(lambda x: x['author']['avatar'], json_data)
+    return map(lambda x: x['avatar_url'], json_data)
 
 
 class GitHubMozaic(object):
-    MIN_X = 60
+    MIN_X = 230
 
     def __init__(self, github_project):
         self.avatars = find_avatars(github_project)
         self.x = int(math.ceil(math.sqrt(len(self.avatars))))
+        self.y = int(math.ceil(len(self.avatars) / float(self.x)))
 
     def write(self, writer):
         main_image = Image.new("RGB", (
             self.MIN_X * self.x,
-            self.MIN_X * self.x), "white")
+            self.MIN_X * self.y), "white")
 
         avatars = get_avatars(self.avatars)
 
         for pos, avatar in enumerate(avatars):
-            io = StringIO(avatar)
+            io = BytesIO(avatar)
             img = Image.open(io)
 
-            column = pos // self.x
-            line = pos % self.x
-            img.thumbnail((self.MIN_X, self.MIN_X), Image.ANTIALIAS)
+            line = pos // self.x
+            column = pos % self.x
+
+            if img.size[0] > self.MIN_X or img.size[1] > self.MIN_X:
+                img.thumbnail((self.MIN_X, self.MIN_X), Image.ANTIALIAS)
+            else:
+                img = img.resize((self.MIN_X, self.MIN_X))
+
             main_image.paste(img, (self.MIN_X * column, self.MIN_X * line))
 
         main_image.save(writer, 'JPEG')
