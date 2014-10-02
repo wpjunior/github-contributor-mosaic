@@ -33,15 +33,14 @@ def find_avatars(github_project):
     c = pycurl.Curl()
     data = BytesIO()
 
-    url = 'https://api.github.com/repos/%s/contributors' % github_project
-
+    url = 'https://api.github.com/repos/%s/stats/contributors' % github_project
     c.setopt(c.URL, url)
     c.setopt(c.WRITEFUNCTION, data.write)
     c.perform()
 
     json_data = json.loads(data.getvalue())
 
-    return map(lambda x: x['avatar_url'], json_data)
+    return map(lambda x: x['author']['avatar_url'], json_data)
 
 
 class GitHubMozaic(object):
