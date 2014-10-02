@@ -1,23 +1,48 @@
 import argparse
 import math
-import requests
-import sys
+import json
+from io import BytesIO
 
+import pycurl
 from PIL import Image
 from StringIO import StringIO
+from octopus import TornadoOctopus
+
+
+def get_avatars(urls):
+    avatars = []
+
+    otto = TornadoOctopus(
+        concurrency=50, auto_start=True, cache=True, expiration_in_seconds=60
+    )
+
+    def handle_url_response(url, response):
+        if 'Not found' == response.text:
+            print url
+        else:
+            avatars.append(response.text)
+
+    for url in urls:
+        otto.enqueue(url, handle_url_response)
+
+    otto.wait()
+
+    return avatars
 
 
 def find_avatars(github_project):
-    req = requests.get(
-        'https://github.com/%s/graphs/contributors-data' % github_project)
+    c = pycurl.Curl()
+    data = BytesIO()
 
-    return map(lambda x: x['author']['avatar'], req.json())
+    url = 'https://github.com/%s/graphs/contributors-data' % github_project
 
+    c.setopt(c.URL, url)
+    c.setopt(c.WRITEFUNCTION, data.write)
+    c.perform()
 
-def print_in_line(text):
-    sys.stdout.write(text)
-    sys.stdout.write('\r')
-    sys.stdout.flush()
+    json_data = json.loads(data.getvalue())
+
+    return map(lambda x: x['author']['avatar'], json_data)
 
 
 class GitHubMozaic(object):
@@ -32,17 +57,16 @@ class GitHubMozaic(object):
             self.MIN_X * self.x,
             self.MIN_X * self.x), "white")
 
-        for pos, avatar in enumerate(self.avatars):
-            req = requests.get(avatar)
-            io = StringIO(req.content)
+        avatars = get_avatars(self.avatars)
+
+        for pos, avatar in enumerate(avatars):
+            io = StringIO(avatar)
             img = Image.open(io)
 
             column = pos // self.x
             line = pos % self.x
             img.thumbnail((self.MIN_X, self.MIN_X), Image.ANTIALIAS)
             main_image.paste(img, (self.MIN_X * column, self.MIN_X * line))
-
-            print_in_line('%d / %d Downloading' % (pos + 1, len(self.avatars)))
 
         main_image.save(writer, 'JPEG')
 
