@@ -1,12 +1,12 @@
-github-contributor-mozaic
+github-contributor-mosaic
 =========================
 
-Create a simple mozaic contain github contributors of a project.
+Create a simple mosaic contain github contributors of a project.
 
 Example
 -------
 ![example]
-(https://raw.githubusercontent.com/wpjunior/github-contributor-mozaic/master/example.jpg)
+(https://raw.githubusercontent.com/wpjunior/github-contributor-mosaic/master/example.jpg)
 
 
 Install dependencies
@@ -19,5 +19,5 @@ Usage
 -----
 
 ```bash
-python github-contributor-mozaic.py --output '<OUTPUT>' --repository '<GITHUB_REPOSITORY>'
+python github-contributor-mosaic.py --output '<OUTPUT>' --repository '<GITHUB_REPOSITORY>'
 ```
