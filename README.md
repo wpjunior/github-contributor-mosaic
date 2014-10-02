@@ -5,6 +5,8 @@ Create a simple mozaic contain github contributors of a project.
 
 Example
 -------
+![example]
+(https://raw.githubusercontent.com/wpjunior/github-contributor-mozaic/master/example.jpg)
 
 
 Install dependencies
