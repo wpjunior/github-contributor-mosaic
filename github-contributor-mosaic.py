@@ -5,7 +5,7 @@ from io import BytesIO
 
 import pycurl
 from PIL import Image
-from StringIO import StringIO
+from cStringIO import StringIO
 from octopus import TornadoOctopus
 
 
