@@ -1,2 +1,3 @@
 Pillow
-requests
+pycurl
+octopus-http==0.6.4
