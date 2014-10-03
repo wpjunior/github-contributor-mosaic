@@ -49,6 +49,8 @@ class GitHubMozaic(object):
     def __init__(self, github_project):
         self.avatars = find_avatars(github_project)
         self.x = int(math.ceil(math.sqrt(len(self.avatars))))
+        if self.x <= 0:
+            self.x = 1
         self.y = int(math.ceil(len(self.avatars) / float(self.x)))
 
     def write(self, writer):
